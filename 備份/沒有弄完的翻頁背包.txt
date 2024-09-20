@@ -1,0 +1,44 @@
+@commands.command()
+async def back(self,ctx,member: Optional[discord.Member]=None):
+  if member == None:
+    member = ctx.author
+  currency = self.bot.get_emoji(1201019371645054977)
+  player = players(str(member.id))
+  item_data = load_item_data()
+  if len(player.back) <= 3:
+    embed = discord.Embed(title=f' {member.display_name}的背包',description=f'生命值 {player.hp}/100 | 錢包 {player.money} 鎊{currency} | lv.{player.lv} | xp {player.xp}/{player.lv*10+250} | 職業 {player.job}',color=discord.Color.random())
+    for key,value in player.back.items():
+      embed.add_field(name=f'{key} | {value}個',value=item_data[key]['des'])
+    await ctx.send(embed=embed)
+  else:
+    try: 
+      page_list = []
+      i = 1
+      embed = discord.Embed(title=f' {member.display_name}的背包',description=f'生命值 {player.hp}/100 | 錢包 {player.money} 鎊{currency} | lv.{player.lv} | xp {player.xp}/{player.lv*10+250} | 職業 {player.job}',color=discord.Color.gold())
+      for key,value in player.back.items():
+        embed.add_field(name=f'{i}. {key} | {value}個',value=item_data[key]['des'])
+        i += 1
+        if i % 3 == 1:
+          page_list.append(embed)
+          embed = discord.Embed(title=f' {member.display_name}的背包',description=f'生命值 {player.hp}/100 | 錢包 {player.money} 鎊{currency} | lv.{player.lv} | xp {player.xp}/{player.lv*10+250} | 職業 {player.job}',color=discord.Color.gold())
+      view = discord.ui.View()
+      button1 = discord.ui.Button(label='上一頁',style=discord.ButtonStyle.primary)
+      button2 = discord.ui.Button(label='下一頁',style=discord.ButtonStyle.primary)
+      n=0
+      async def button1_callback(interaction:discord.Interaction):
+        try:
+          await interaction.response.edit_message(embed=page_list[n-1])
+        except Exception as e:
+          print(e)
+      async def button2_callback(interaction:discord.Interaction):
+        try:
+          await interaction.response.edit_message(embed=page_list[n+1])
+        except Exception as e:
+          print(e)
+      button1.callback = button1_callback
+      button2.callback = button2_callback
+      view.add_item(button1)
+      view.add_item(button2)
+      await ctx.send(embed=page_list[0],view=view)
+    except Exception as e:
+      print(e)
